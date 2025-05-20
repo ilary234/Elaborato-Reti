@@ -1,0 +1,16 @@
+# Normalize text files
+* text=auto eol=lf
+
+# Windows script files
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Image files
+*.jpg  -text
+*.jpeg -text
+*.png  -text
+*.gif  -text
+*.bmp  -text
+*.svg  -text
+*.webp -text

@@ -1,5 +1,6 @@
 from socket import * 
 import logging
+import os
 
 #Configurazione del logging per rendere visibili sul terminale anche i log di livello info
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -48,7 +49,7 @@ while True:
 
             if filename == '/':
                 filename = '/index.html'
-            filepath = path + filename
+            filepath = os.path.join(path, filename.lstrip('/'))
 
             #Determina il MIME type
             ext = '.' + filepath.split('.')[-1]

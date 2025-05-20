@@ -1,21 +1,21 @@
 from socket import * 
 import logging
 
-# Configurazione del logging così che vengano resi visibile sul termonale anche i log di info
+#Configurazione del logging per rendere visibili sul terminale anche i log di livello info
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 
 serverPort=8080
-#crea una socket TCP facendo uso dell'indirizzamento IPv4
+#Creazione di una socket TCP con indirizzamento IPv4
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverAddress=('localhost',serverPort)
-#collega la socket all'indirizzo del server, è ora pronta ad accettare connessioni sulla porta 8080
+#Collegamento della socket all'indirizzo del server
 serverSocket.bind(serverAddress)
 
-#la socket è in ascolto per richieste di connessione
+#La socket è in ascolto per richieste di connessione
 serverSocket.listen(1)
 print("the web server is running and listening on port: ", serverPort)
 
-# Dizionario dei MIME types
+#Dizionario dei MIME types
 mime_types = {
     ".html": "text/html",
     ".css": "text/css",
@@ -29,19 +29,19 @@ path = 'www'
 
 while True:
 
-    #accept blocca il server fino a che non è stata accettata una richiesta di connessione.
-    #restituisce quindi una nuova socket per la comunicazione e l'indirizzo del client.
+    #Blocca il server fino a che non è stata accettata una richiesta di connessione.
+    #Restituisce quindi una nuova socket per la comunicazione e l'indirizzo del client.
     communicationSocket, clientAddress = serverSocket.accept()
     print("new enstablished socket for comunication: ", communicationSocket)
     print("client address: ", clientAddress)
 
     try:
         
-        #cerca di ricevere dei byte dal client. Massimo 1024
+        #Cerca di ricevere una richiesta dal client. Massimo 1024 bytes
         message = communicationSocket.recv(1024)
         if len(message.split()) > 0: 
 
-            # Log della richiesta ricevuta
+            #Log della richiesta ricevuta
             method = message.split()[0].decode()
             filename = message.split()[1].decode()
             logging.info(f"Request from {clientAddress}: {method} {filename}")
@@ -50,17 +50,18 @@ while True:
                 filename = '/index.html'
             filepath = path + filename
 
-            # Determina il MIME type
+            #Determina il MIME type
             ext = '.' + filepath.split('.')[-1]
             mime_type = mime_types.get(ext.lower(), "application/octet-stream")
 
-            #apre il file e se non esiste viene generato un errore di I/O
+            #Il file viene aperto in modalità binaria
             f = open(filepath,'rb') 
             outputdata = f.read()
 
                 
-            #Invia la riga di intestazione HTTP nel socket con il messaggio OK
-            communicationSocket.send("HTTP/1.1 200 OK\r\n\r\n".encode())
+            #Invia l'header HTTP 200 OK, il Content-Type e il contenuto del file in bytes
+            communicationSocket.send("HTTP/1.1 200 OK\r\n".encode())
+            communicationSocket.send(f"Content-Type: {mime_type}\r\n\r\n".encode())
             communicationSocket.send(outputdata)
             communicationSocket.send("\r\n".encode())
 
@@ -68,9 +69,9 @@ while True:
             
 
     except IOError:
-        # Log dell'errore 404
+        #Log dell'errore 404
         logging.warning(f"File not found: {filename} from {clientAddress}")
-        #Invia messaggio di risposta per file non trovato
+        #Invia l'header HTTP 404 Not Found e una semplice pagina html di errore
         communicationSocket.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())
         communicationSocket.send("<html><head></head><body><h1>404 Not Found</h1></body></html>\r\n".encode())
 
